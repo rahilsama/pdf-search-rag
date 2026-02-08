@@ -4,6 +4,11 @@ from chromadb.api.types import Documents, Embeddings
 from pathlib import Path
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
+import re
+
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
 
 # ----------------------------
 # CONFIG
@@ -58,16 +63,51 @@ def extract_text_from_pdf(pdf_path: Path) -> str:
 # ----------------------------
 # SIMPLE TEXT CHUNKING
 # ----------------------------
+def clean_text(text: str) -> str:
+    # Collapse multiple newlines
+    text = re.sub(r"\n{2,}", "\n", text)
+
+    # Remove common page number patterns
+    text = re.sub(r"Page\s*\d+", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"\n\s*\d+\s*\n", "\n", text)
+
+    # Collapse extra spaces
+    text = re.sub(r"\s{2,}", " ", text)
+
+    return text.strip()
 
 def chunk_text(text: str):
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + CHUNK_SIZE
-        chunks.append(text[start:end])
-        start += CHUNK_SIZE - CHUNK_OVERLAP
-    return chunks
+    # Hard pre-split large documents
+    raw_blocks = [
+        text[i:i+50000]
+        for i in range(0, len(text), 50000)
+    ]
 
+    chunks = []
+
+    for block in raw_blocks:
+        doc = nlp(block)
+        sentences = [sent.text.strip() for sent in doc.sents if sent.text.strip()]
+
+        current_chunk = ""
+
+        for sentence in sentences:
+            if len(sentence) > CHUNK_SIZE:
+                for i in range(0, len(sentence), CHUNK_SIZE):
+                    chunks.append(sentence[i:i+CHUNK_SIZE])
+                continue
+
+            if len(current_chunk) + len(sentence) + 1 <= CHUNK_SIZE:
+                current_chunk += sentence + " "
+            else:
+                if current_chunk:
+                    chunks.append(current_chunk.strip())
+                current_chunk = sentence + " "
+
+        if current_chunk:
+            chunks.append(current_chunk.strip())
+
+    return chunks
 
 # ----------------------------
 # INGEST ALL PDFs
@@ -85,7 +125,8 @@ id_counter = 0
 
 for pdf_path in pdf_files:
     print(f"Processing: {pdf_path.name}")
-    text = extract_text_from_pdf(pdf_path)
+    raw_text = extract_text_from_pdf(pdf_path)
+    text = clean_text(raw_text)
 
     if not text.strip():
         print("  -> No extractable text. Skipping.\n")
@@ -106,6 +147,7 @@ for pdf_path in pdf_files:
         ids.append(f"doc_{id_counter}")
         id_counter += 1
 
+    print(f"Max chunk length: {max(len(c) for c in chunks)}")
     collection.add(
         documents=documents,
         metadatas=metadatas,
