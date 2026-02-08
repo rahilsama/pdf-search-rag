@@ -1,9 +1,9 @@
 import os
 import chromadb
-from chromadb.utils import embedding_functions
-from typing import Any, cast
+from chromadb.api.types import Documents, Embeddings
 from pathlib import Path
 from pypdf import PdfReader
+from sentence_transformers import SentenceTransformer
 
 # ----------------------------
 # CONFIG
@@ -18,13 +18,23 @@ CHUNK_OVERLAP = 100
 # ----------------------------
 client = chromadb.HttpClient(host='localhost', port=8000)
 
-emb_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name="all-MiniLM-L6-v2"
-)
+class NomicEmbeddingFunction(chromadb.EmbeddingFunction):
+    def __init__(self):
+        # self.name = "nomic-embed-text-v1"
+        self.model = SentenceTransformer(
+            "nomic-ai/nomic-embed-text-v1",
+            trust_remote_code=True
+        )
+
+    def __call__(self, input: Documents) -> Embeddings:
+        embeddings = self.model.encode(list(input), normalize_embeddings=True)
+        return embeddings.tolist()
+
+emb_fn = NomicEmbeddingFunction()
 
 collection = client.get_or_create_collection(
     name=COLLECTION_NAME,
-    embedding_function=cast(Any, emb_fn)
+    embedding_function=emb_fn
 )
 
 # ----------------------------
