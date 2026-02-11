@@ -19,11 +19,19 @@ def get_model():
     """
     Load and cache the LLM model once. Uses the same configuration as your original script.
     """
-    return AutoModelForCausalLM.from_pretrained(
+    model = AutoModelForCausalLM.from_pretrained(
         LLM_MODEL_NAME,
         torch_dtype=torch.float16,
-        device_map="auto",
     )
+
+    # Force Apple Silicon GPU (MPS) if available
+    if torch.backends.mps.is_available():
+        model = model.to("mps")
+    else:
+        model = model.to("cpu")
+
+    model.eval()
+    return model
 
 
 def generate_answer(
@@ -41,12 +49,12 @@ def generate_answer(
 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
-    with torch.no_grad():
+    with torch.inference_mode():
         outputs = model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            do_sample=True,
+            do_sample=False,              # Greedy decoding (faster)
+            pad_token_id=tokenizer.eos_token_id,
         )
 
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
