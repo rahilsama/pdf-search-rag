@@ -43,6 +43,8 @@ def get_model():
 
 def generate_answer(
     prompt: str,
+    model,
+    tokenizer,
     max_new_tokens: int = MAX_NEW_TOKENS,
     temperature: float = TEMPERATURE,
 ) -> str:
@@ -51,8 +53,6 @@ def generate_answer(
 
     Preserves your original generation settings.
     """
-    tokenizer = get_tokenizer()
-    model = get_model()
 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 

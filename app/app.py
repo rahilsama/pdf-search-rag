@@ -17,7 +17,7 @@ def main() -> None:
     """
     query = input("Enter your question: ")
 
-    result = run_rag(query)
+    result = run_rag(query, model, tokenizer)
 
     answer = result["answer"]
     sources = result["sources"]

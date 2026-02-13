@@ -72,7 +72,7 @@ def _extract_sources(results: Dict[str, Any]) -> List[Dict[str, Any]]:
     return sources
 
 
-def run_rag(query: str, top_k: int = DEFAULT_TOP_K) -> Dict[str, Any]:
+def run_rag(query: str, model, tokenizer, top_k: int = DEFAULT_TOP_K) -> Dict[str, Any]:
     """
     End-to-end RAG pipeline:
 
@@ -92,7 +92,7 @@ def run_rag(query: str, top_k: int = DEFAULT_TOP_K) -> Dict[str, Any]:
     context = context[:MAX_CONTEXT_CHARS]
 
     prompt = build_prompt(context=context, question=query)
-    answer = generate_answer(prompt)
+    answer = generate_answer(prompt, model, tokenizer)
 
     latency_seconds = time.time() - start_time
     sources = _extract_sources(results)
