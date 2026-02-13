@@ -6,6 +6,7 @@ from .llm import generate_answer
 from .retriever import retrieve_documents
 
 
+
 def build_prompt(context: str, question: str) -> str:
     """
     Build the RAG prompt, preserving your original instructions and style.
@@ -84,7 +85,11 @@ def run_rag(query: str, top_k: int = DEFAULT_TOP_K) -> Dict[str, Any]:
     start_time = time.time()
 
     results = retrieve_documents(query, top_k=top_k)
-    context = _extract_context(results)
+    # context = _extract_context(results)
+
+    MAX_CONTEXT_CHARS = 2000
+    context = "\n\n".join(results["documents"][0])
+    context = context[:MAX_CONTEXT_CHARS]
 
     prompt = build_prompt(context=context, question=query)
     answer = generate_answer(prompt)

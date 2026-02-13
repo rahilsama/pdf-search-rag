@@ -1,4 +1,14 @@
 from core.rag_pipeline import run_rag
+import streamlit as st
+from core.llm import get_model, get_tokenizer
+
+@st.cache_resource
+def load_llm():
+    model = get_model()
+    tokenizer = get_tokenizer()
+    return model, tokenizer
+
+model, tokenizer = load_llm()
 
 
 def main() -> None:

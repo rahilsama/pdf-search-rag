@@ -1,0 +1,9 @@
+chromadb
+sentence-transformers
+transformers
+torch
+pypdf
+spacy
+
+# You also need the spaCy English model:
+# python -m spacy download en_core_web_sm

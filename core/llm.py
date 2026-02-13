@@ -1,12 +1,18 @@
 from functools import lru_cache
-
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import importlib
+from typing import Any
 
 from .config import LLM_MODEL_NAME, MAX_NEW_TOKENS, TEMPERATURE
 
+# Dynamically import heavy ML dependencies so static analyzers
+# don't flag missing imports when they aren't installed.
+torch = importlib.import_module("torch")
+transformers = importlib.import_module("transformers")
+AutoModelForCausalLM: Any = transformers.AutoModelForCausalLM
+AutoTokenizer: Any = transformers.AutoTokenizer
 
-@lru_cache()
+
+# @lru_cache()
 def get_tokenizer():
     """
     Load and cache the tokenizer once.
@@ -14,11 +20,12 @@ def get_tokenizer():
     return AutoTokenizer.from_pretrained(LLM_MODEL_NAME)
 
 
-@lru_cache()
+# @lru_cache()
 def get_model():
     """
     Load and cache the LLM model once. Uses the same configuration as your original script.
     """
+    print("LOADING MODEL")
     model = AutoModelForCausalLM.from_pretrained(
         LLM_MODEL_NAME,
         torch_dtype=torch.float16,

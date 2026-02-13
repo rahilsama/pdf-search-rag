@@ -30,7 +30,7 @@ LLM_MODEL_NAME: str = "microsoft/Phi-3-mini-4k-instruct"
 # Chunking
 # ----------------------------
 
-CHUNK_SIZE: int = 800
+CHUNK_SIZE: int = 500
 CHUNK_OVERLAP: int = 100  # currently not used, preserved from original config
 HARD_SPLIT_SIZE: int = 50000  # size for pre-splitting very large documents
 
@@ -38,6 +38,6 @@ HARD_SPLIT_SIZE: int = 50000  # size for pre-splitting very large documents
 # Retrieval / RAG
 # ----------------------------
 
-DEFAULT_TOP_K: int = 5
-MAX_NEW_TOKENS: int = 300
-TEMPERATURE: float = 0.3
+DEFAULT_TOP_K: int = 2
+MAX_NEW_TOKENS: int = 150
+TEMPERATURE: float = 0.2
