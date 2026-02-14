@@ -24,7 +24,7 @@ EMBEDDING_MODEL_NAME: str = "nomic-ai/nomic-embed-text-v1"
 # LLM
 # ----------------------------
 
-LLM_MODEL_NAME: str = "microsoft/Phi-3-mini-4k-instruct"
+LLM_MODEL_NAME: str = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 
 # ----------------------------
 # Chunking
@@ -39,5 +39,5 @@ HARD_SPLIT_SIZE: int = 50000  # size for pre-splitting very large documents
 # ----------------------------
 
 DEFAULT_TOP_K: int = 2
-MAX_NEW_TOKENS: int = 150
+MAX_NEW_TOKENS: int = 80
 TEMPERATURE: float = 0.2

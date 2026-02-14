@@ -26,17 +26,14 @@ def get_model():
     Load and cache the LLM model once. Uses the same configuration as your original script.
     """
     print("LOADING MODEL")
+    # NOTE:
+    # Running Phi-3 on Apple Silicon MPS can trigger shape / matmul errors.
+    # To avoid these, we force the model onto CPU with float32.
     model = AutoModelForCausalLM.from_pretrained(
         LLM_MODEL_NAME,
-        torch_dtype=torch.float16,
+        torch_dtype=torch.float32,
     )
-
-    # Force Apple Silicon GPU (MPS) if available
-    if torch.backends.mps.is_available():
-        model = model.to("mps")
-    else:
-        model = model.to("cpu")
-
+    model = model.to("cpu")
     model.eval()
     return model
 
@@ -55,12 +52,14 @@ def generate_answer(
     """
 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+    print("Input tokens:", inputs["input_ids"].shape[1])
 
     with torch.inference_mode():
         outputs = model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
-            do_sample=False,              # Greedy decoding (faster)
+            do_sample=False,
+            use_cache=True,
             pad_token_id=tokenizer.eos_token_id,
         )
 
