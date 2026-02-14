@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # ----------------------------
@@ -7,12 +8,12 @@ from pathlib import Path
 DOWNLOADS_PATH: Path = Path.home() / "pdfs"
 
 # ----------------------------
-# Chroma / vector store
+# Chroma / vector store (env for Docker)
 # ----------------------------
 
 COLLECTION_NAME: str = "my_pdfs"
-CHROMA_HOST: str = "localhost"
-CHROMA_PORT: int = 8000
+CHROMA_HOST: str = os.getenv("CHROMA_HOST", "localhost")
+CHROMA_PORT: int = int(os.getenv("CHROMA_PORT", "8000"))
 
 # ----------------------------
 # Embeddings

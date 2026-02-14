@@ -4,6 +4,10 @@ transformers
 torch
 pypdf
 spacy
+uvicorn
+streamlit
+requests
+fastapi
+einops 
 
-# You also need the spaCy English model:
-# python -m spacy download en_core_web_sm
+# SpaCy model (run once): python -m spacy download en_core_web_sm
