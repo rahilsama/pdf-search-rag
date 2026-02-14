@@ -27,39 +27,36 @@ model, tokenizer = load_llm()
 
 
 def main() -> None:
-    """
-    Simple CLI entry point for querying the local RAG system.
-    """
-    query = input("Enter your question: ")
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+    API_URL = "http://127.0.0.1:8000/ask"
 
-    # result = run_rag(query, model, tokenizer)
-    response = requests.post(
-        "http://127.0.0.1:8000/ask",
-        json={"question": query},
-    )
-    data = response.json()
+    st.set_page_config(page_title="Local RAG System", layout="wide")
 
-    st.write(data["answer"])
-    st.write(data["sources"])
-    st.write(f"Latency: {data['latency']:.2f}s")
+    st.title("🧠 Local RAG Knowledge System")
 
-    # answer = result["answer"]
-    # sources = result["sources"]
-    # latency_seconds = result["latency_seconds"]
+    st.markdown("Ask a question based on your indexed PDFs.")
 
-    # print("\nAI Answer:\n")
-    # print(answer)
+    # Input box
+    question = st.text_input("Enter your question:")
 
-    # if sources:
-    #     print("\nSources:")
-    #     for idx, src in enumerate(sources, start=1):
-    #         source_str = src.get("source") or "Unknown source"
-    #         chunk_index = src.get("chunk_index")
-    #         print(f"{idx}. {source_str} (chunk {chunk_index})")
+    # Submit button
+    if st.button("Ask") and question.strip():
 
-    # print(f"\nLatency: {latency_seconds:.2f} seconds")
+        with st.spinner("Generating answer..."):
+            response = requests.post(
+                API_URL,
+                json={"question": question}
+            )
+
+            data = response.json()
+
+        st.subheader("📌 Answer")
+        st.write(data["answer"])
+
+        st.subheader("📚 Sources")
+        for source in data["sources"]:
+            st.write(f"- {source}")
+
+        st.caption(f"⏱ Latency: {data['latency']:.2f} seconds")
 
 
 if __name__ == "__main__":
